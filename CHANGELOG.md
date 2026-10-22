@@ -6,6 +6,18 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-22
+
+### Added
+
+- 新增 `src/pydiag/__main__.py`，支持 `python -m pydiag ...` 入口。
+  `pip install --user` 时启动器落在用户级 Scripts 目录（默认不在 `PATH`），
+  此前这种环境下用户没有任何可用的调用方式。
+
+### Documentation
+
+- README 安装章节补充 `PATH` 相关排查与 `python -m pydiag` 替代入口。
+
 ## [1.0.0] - 2026-10-22
 
 首个公开发布版本（公开版本号自 1.0.0 起算）。

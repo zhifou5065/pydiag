@@ -41,6 +41,12 @@ pydiag selftest         # 无硬件也能跑的内置自检
 
 要求 Python **3.10+**（Windows / Linux / macOS 均可）。
 
+> **提示：`pydiag` 提示"不是内部或外部命令"**
+> `pip install --user` 会把启动器装到用户级 Scripts 目录
+> （Windows：`%APPDATA%\Python\Python3xx\Scripts`；Linux/macOS：`~/.local/bin`），
+> 该目录默认可能不在 `PATH` 上。两种解决办法：
+> ① 把该目录加进 `PATH`；② 用等价入口 `python -m pydiag selftest`（不依赖 PATH）。
+
 从源码安装（开发模式）：
 
 ```bash
@@ -592,6 +598,7 @@ pydiag/
 ├── pydiag.py                 # 源码树直接运行入口
 ├── tools/build_dist.py       # 构建便捷入口（调用 python -m build）
 └── src/pydiag/
+    ├── __main__.py           # python -m pydiag 入口（等价于 pydiag 命令）
     ├── cli.py                # 命令行入口（10 个子命令）
     ├── config.py             # EcuProfile 持久化（三协议字段 + 安全算法字段）
     ├── autodetect.py         # 多设备多通道自动探测（缓存校验 + 全扫描回退）
