@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydiag"
-version = "1.0.1"
+version = "1.0.2"
 description = "UDS (ISO 14229) diagnostic toolkit with pluggable multi-vendor CAN/LIN devices (ZLG / PEAK PCAN / Vector / virtual), DoCAN / DoLIN / DoIP"
 readme = "README.md"
 requires-python = ">=3.10"

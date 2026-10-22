@@ -96,14 +96,27 @@ class PcanDriver(BaseDriver):
     PCAN_CONTROLLER_NUMBER = 0x010F
     PCAN_UNIQUE_ID = 0x0130           # ★ USB 唯一序列号 (GUID 形态字符串)
 
+    #: TPCANStatus（PCAN-Basic 官方定义）
+    ERR_OK        = 0x0000
+    ERR_NODRIVER  = 0x0200            # 驱动未安装 / 无可用驱动
+    ERR_HWINUSE   = 0x0400            # 硬件在位，被其它进程/通道占用
+    ERR_NETINUSE  = 0x0800            # 网络在位，被占用
+    ERR_ILLHW     = 0x1400            # 该槽位无硬件
+
     def list_devices(self) -> List[DeviceInfo]:
         """PCAN-USB 探测（4.10 实测策略）。
 
         GetStatus/LookUpChannel 在 4.10 x64 上对未初始化通道返回非标准码
         （0x4000000/0x8000），不可用于探测；改为逐通道试初始化：
           0x00   = 在位且空闲 → 读取标识后 Uninitialize 还原
-          0x1400 = PCAN_ERROR_ILLHW（无硬件）
-          其它   = 在位但异常/占用 → 记录并标注
+          0x400 / 0x800 = 在位但被占用 → 记录并标注 busy
+          0x200  = PCAN_ERROR_NODRIVER（驱动未装）→ 该槽位不算设备
+          0x1400 = PCAN_ERROR_ILLHW（无硬件）→ 该槽位不算设备
+          其它   = 视为无设备
+
+        注意 NODRIVER 不是"忙"：驱动没装时 8 个槽位会全部返回 0x200，
+        早期版本把它归进"在位但异常"，于是 `pydiag devices` 会在没接任何
+        硬件的机器上列出 8 个 busy 的幻影 PCAN-USB。
 
         多盒区分: 初始化成功后读 PCAN_UNIQUE_ID (0x130) 拿 USB 序列号,
         device_id 用序列号（稳定, 不随 USB 口/顺序变化）;
@@ -123,10 +136,11 @@ class PcanDriver(BaseDriver):
         dll.CAN_GetValue.argtypes = [ctypes.c_ushort, ctypes.c_ubyte,
                                      ctypes.c_void_p, ctypes.c_uint]
         out = []
+        nodriver = False
         for ch in range(8):
             h = 0x151 + ch
             r = dll.CAN_Initialize(h, 0x001C, 0, 0, 0)
-            if r == 0x00:
+            if r == self.ERR_OK:
                 # 读硬件标识
                 uid, hw_name, dev_no = "", "", 0
                 buf = ctypes.create_string_buffer(256)
@@ -147,11 +161,21 @@ class PcanDriver(BaseDriver):
                     serial=uid,
                     extra={"status": "free", "handle": h,
                            "usb_slot": ch + 1, "device_number": dev_no}))
-            elif r != 0x1400:                # 非无硬件 → 在位但不可初始化
+            elif r in (self.ERR_HWINUSE, self.ERR_NETINUSE):
+                # 真实在位，只是被 CANoe/PCANView 等占着 —— 这个要报给用户
                 out.append(DeviceInfo(
                     driver=self.name, device_id=f"pcan:usb{ch+1}",
                     name=f"PCAN-USB {ch+1}", channels=1,
                     extra={"status": f"busy(0x{r:X})"}))
+            elif r == self.ERR_NODRIVER:
+                nodriver = True
+            else:
+                # ILLHW(无硬件) 以及其它状态：该槽位不是可用设备
+                log.debug("pcan ch%d 跳过, CAN_Initialize status=0x%X", ch + 1, r)
+        if nodriver and not out:
+            log.warning(
+                "PCAN 驱动未安装（CAN_Initialize 返回 0x200 NODRIVER）: "
+                "PCAN 通道全部不可用。安装 PEAK 官方 PCAN-Basic 驱动后重试")
         return out
 
     def open(self, device_id: str) -> "PcanDevice":

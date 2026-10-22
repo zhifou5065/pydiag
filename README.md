@@ -549,6 +549,9 @@ PYDIAG_LOG_LEVEL=DEBUG pydiag smoke ...
    前一个 pydiag 进程刚退出时驱动句柄释放有几秒延迟，稍等重试。
 2. **USB 层断开**：OpenDevice 全失败 + 无残留进程 = USB 线松 / Hub 掉电，重新插拔（避免经 Hub）。
 3. ZLG 打开后 `InitCAN` 偶发失败：工具已内置自动恢复（设备级重开）；恢复不了就重新插拔。
+4. **PCAN 一个设备都枚举不到**：`CAN_Initialize` 返回 `0x200`（`PCAN_ERROR_NODRIVER`）
+   表示 **PCAN 驱动没装**，不是设备被占用。装 PEAK 官方 PCAN-Basic 驱动后重试
+   （日志里会有对应 warning）。返回 `0x400`/`0x800` 才是"在位但被 CANoe/PCANView 占着"。
 
 **自动探测失败 / 全超时**
 

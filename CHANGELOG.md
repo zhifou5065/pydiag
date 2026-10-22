@@ -6,6 +6,21 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-22
+
+### Fixed
+
+- `pydiag devices` 在没有 PCAN 硬件、且未安装 PCAN 驱动的机器上，会列出 8 个
+  `pcan:usbN`、状态 `busy(0x200)` 的幻影设备。
+  根因是把 `CAN_Initialize` 的返回码按"除 `0x1400`(ILLHW) 以外都算在位"处理，
+  而 `0x200` 实际是 `PCAN_ERROR_NODRIVER`（驱动未安装）。
+  现在只有 `0x400`(HWINUSE) / `0x800`(NETINUSE) 才标记为 busy，
+  其余状态码一律视为该槽位无可用设备；驱动缺失时记一条 warning 便于排查。
+
+### Documentation
+
+- README 排查章节补充 PCAN 状态码含义（`0x200` 驱动未装 / `0x400` `0x800` 被占用）。
+
 ## [1.0.1] - 2026-10-22
 
 ### Added
