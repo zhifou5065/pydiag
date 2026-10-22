@@ -77,6 +77,47 @@ def factory(key: str = "00000000"):
   只说「已测试」不写过程的 PR 会被要求补充。
 - 新增用户可见行为 → 同步更新 `README.md`；新增版本 → 更新 `CHANGELOG.md` 的 `[Unreleased]`。
 
+## 发布新版本
+
+版本号、GitHub 代码、Git 标签三者必须一致。不要手工改版本号后只推代码不推标签。
+
+一条命令完成 `升版本 → 改 CHANGELOG → commit → tag → push`：
+
+```bash
+python tools/release.py 1.0.3 "修复 PCAN 幻影设备"
+```
+
+它会自动做这些事，任何一步失败都会中止、不留半成品：
+
+1. 检查工作区干净、当前在 `main`、标签 `v1.0.3` 尚不存在
+2. 同步修改 `pyproject.toml` 与 `src/pydiag/__init__.py` 的版本号
+3. 在 `CHANGELOG.md` 的 `[Unreleased]` 下插入 `## [1.0.3] - 日期` 一节
+4. commit → `git tag -a v1.0.3` → 推送 `main` 与标签
+
+推送标签后 [`.github/workflows/release.yml`](.github/workflows/release.yml) 自动接手：
+
+```
+校验 tag 与代码内版本号一致  →  构建 sdist + wheel  →  twine check
+        →  从 CHANGELOG 提取发布说明  →  创建 GitHub Release 并附上产物
+```
+
+**校验那一步是硬性的**：如果标签写 `v1.0.3` 但代码里还是 `1.0.2`，CI 直接失败，
+不会产出一个"标签和内容对不上"的 Release。
+
+### 发布到 PyPI
+
+GitHub Release 只负责源码与产物归档，PyPI 需要单独上传：
+
+```bash
+python -m build
+twine check dist/*
+twine upload dist/*
+```
+
+> 想省掉这步？在 PyPI 配置 **Trusted Publishing**（Owner `zhifou5065` / Repo `pydiag` /
+> Workflow `release.yml` / Environment `pypi`），然后在 workflow 里加一个使用
+> `pypa/gh-action-pypi-publish@release/v1` 的 job，即可用 OIDC 免 token 发布。
+
 ## 报告问题
 
 - 功能异常 / 用法疑问 → [Issues](https://github.com/zhifou5065/pydiag/issues)

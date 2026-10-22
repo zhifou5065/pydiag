@@ -599,7 +599,13 @@ pydiag/
 ├── THIRD_PARTY_NOTICES.md    # 随包分发的第三方驱动版权归属
 ├── LICENSE
 ├── pydiag.py                 # 源码树直接运行入口
-├── tools/build_dist.py       # 构建便捷入口（调用 python -m build）
+├── tools/
+│   ├── build_dist.py         # 构建便捷入口（调用 python -m build）
+│   ├── release.py            # 一条命令完成 升版本 + 打标签 + 推送
+│   ├── check_version.py      # 校验标签 / pyproject / __init__ 版本号一致
+│   └── changelog_notes.py    # 从 CHANGELOG 提取某版本发布说明
+├── .github/workflows/
+│   └── release.yml           # 推送 v* 标签时自动创建 GitHub Release
 └── src/pydiag/
     ├── __main__.py           # python -m pydiag 入口（等价于 pydiag 命令）
     ├── cli.py                # 命令行入口（10 个子命令）

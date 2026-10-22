@@ -1,0 +1,53 @@
+name: Release
+
+# 推送 v* 标签是唯一的发版入口（由 tools/release.py 自动创建并推送）
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 校验版本一致性并创建 Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装打包工具
+        run: python -m pip install --upgrade pip build twine
+
+      # 关键守卫：标签版本号必须与 pyproject.toml、__init__.py 一致。
+      # 不一致就失败，避免产出「标签是 v1.1.0、包里还是 1.0.x」的 Release。
+      - name: 校验标签与代码内版本号一致
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/check_version.py "${GITHUB_REF_NAME}"
+
+      - name: 构建 sdist 与 wheel
+        run: python -m build
+
+      - name: 校验元数据可被 PyPI 正确渲染
+        run: twine check dist/*
+
+      - name: 从 CHANGELOG 提取该版本发布说明
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/changelog_notes.py "${GITHUB_REF_NAME}" release-notes.md
+
+      - name: 创建 GitHub Release 并附加构建产物
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "pydiag ${GITHUB_REF_NAME#v}" \
+            --notes-file release-notes.md \
+            dist/*.whl dist/*.tar.gz
