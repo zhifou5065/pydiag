@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydiag"
+version = "1.0.0"
+description = "UDS (ISO 14229) diagnostic toolkit with pluggable multi-vendor CAN/LIN devices (ZLG / PEAK PCAN / Vector / virtual), DoCAN / DoLIN / DoIP"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "pydiag contributors" }]
+keywords = [
+    "UDS", "ISO-14229", "ISO-15765", "ISO-TP", "CAN", "CANFD", "LIN", "DoIP",
+    "diagnostic", "automotive", "ZLG", "PCAN", "Vector", "security-access",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Hardware",
+]
+dependencies = []
+
+[project.optional-dependencies]
+crypto = ["pycryptodome>=3.20"]
+dev = ["pytest>=8.0", "build>=1.2", "twine>=6.0"]
+
+[project.scripts]
+pydiag = "pydiag.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/zhifou5065/pydiag"
+Repository = "https://github.com/zhifou5065/pydiag"
+Issues = "https://github.com/zhifou5065/pydiag/issues"
+Changelog = "https://github.com/zhifou5065/pydiag/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/zhifou5065/pydiag#readme"
+"Release Notes" = "https://github.com/zhifou5065/pydiag/releases"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pydiag*"]
+
+[tool.setuptools.package-data]
+pydiag = ["py.typed"]
+"pydiag.zlg_runtime" = [
+    "*.md",
+    "kerneldlls/*.dll",
+    "kerneldlls/*.xml",
+    "kerneldlls/*.ini",
+    "kerneldlls/devices_property/*.xml",
+]
+"pydiag.vendor.zlg" = ["*.dll", "*.so", "*.dylib", "linux/*.so", "linux/*.rules", "linux/*.md"]
+"pydiag.vendor.pcan" = ["*.dll", "*.so", "*.dylib"]
+"pydiag.vendor.vector" = ["*.dll", "*.so", "*.dylib"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["__pycache__/*", "*.pyc"]

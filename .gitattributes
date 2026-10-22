@@ -1,0 +1,37 @@
+# 统一换行符，避免 Windows / Linux 协作时整文件 diff
+* text=auto eol=lf
+
+# 源码与文档
+*.py        text eol=lf
+*.md        text eol=lf
+*.toml      text eol=lf
+*.cfg       text eol=lf
+*.txt       text eol=lf
+*.rules     text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Windows 脚本必须 CRLF
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+
+# 二进制：禁止换行符转换与文本 diff
+*.dll       binary
+*.so        binary
+*.dylib     binary
+*.lib       binary
+*.exe       binary
+*.whl       binary
+*.tar.gz    binary
+*.png       binary
+*.jpg       binary
+*.ico       binary
+
+# GitHub 语言统计不把厂商驱动算进本项目代码
+src/pydiag/vendor/**                  linguist-vendored
+src/pydiag/zlg_runtime/kerneldlls/**  linguist-vendored
+
+# 厂商原样分发的配置/描述文件：保持字节不变，禁止换行符转换
+src/pydiag/zlg_runtime/kerneldlls/**  -text
+src/pydiag/vendor/**                  -text

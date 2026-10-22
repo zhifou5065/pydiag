@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+*.egg
+*.whl
+*.tar.gz
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 测试 / 静态检查缓存
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 运行时产物（可能含真实 ECU 密钥、序列号、VIN，严禁入库）
+*.log
+*.jsonl
+.pydiag_config/
+
+# 打包临时
+.pip_tmp/
+.uvcache/
+_acl_recovery/
+
+# 本机专用启动脚本（硬编码了本机 Python 绝对路径，不对外）
+pydiag.cmd
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini

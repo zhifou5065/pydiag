@@ -1,0 +1,3 @@
+# pydiag: ZLG USBCANFD 系列普通用户访问权限
+# 安装: sudo cp 50-usbcanfd.rules /etc/udev/rules.d/ && sudo udevadm control --reload
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="3068", ATTRS{idProduct}=="0009", GROUP="users", MODE="0666"
